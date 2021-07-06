@@ -308,19 +308,13 @@ class TorrentSearch:
 
 
 RESULT_STR_1337 = (
-    "➲Name: `{Name}`\n"
-    "➲Size: {Size}\n"
-    "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
+    "➲Name: `{Name}`\n" "➲Size: {Size}\n" "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
 )
 RESULT_STR_PIRATEBAY = (
-    "➲Name: `{Name}`\n"
-    "➲Size: {Size}\n"
-    "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
+    "➲Name: `{Name}`\n" "➲Size: {Size}\n" "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
 )
 RESULT_STR_TGX = (
-    "➲Name: `{Name}`\n"
-    "➲Size: {Size}\n"
-    "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
+    "➲Name: `{Name}`\n" "➲Size: {Size}\n" "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
 )
 RESULT_STR_YTS = (
     "➲Name: `{Name}`\n"
@@ -331,25 +325,15 @@ RESULT_STR_YTS = (
     "➲Duration: {Runtime}\n"
     "➲Language: {Language}"
 )
-RESULT_STR_EZTV = (
-    "➲Name: `{Name}`\n"
-    "➲Size: {Size}\n"
-    "➲Seeders: {Seeders}"
-)
+RESULT_STR_EZTV = "➲Name: `{Name}`\n" "➲Size: {Size}\n" "➲Seeders: {Seeders}"
 RESULT_STR_TORLOCK = (
-    "➲Name: `{Name}`\n"
-    "➲Size: {Size}\n"
-    "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
+    "➲Name: `{Name}`\n" "➲Size: {Size}\n" "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
 )
 RESULT_STR_RARBG = (
-    "➲Name: `{Name}`\n"
-    "➲Size: {Size}\n"
-    "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
+    "➲Name: `{Name}`\n" "➲Size: {Size}\n" "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
 )
 RESULT_STR_ALL = (
-    "➲Name: `{Name}`\n"
-    "➲Size: {Size}\n"
-    "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
+    "➲Name: `{Name}`\n" "➲Size: {Size}\n" "➲Seeders: {Seeders} || ➲Leechers: {Leechers}"
 )
 
 torrents_dict = {
