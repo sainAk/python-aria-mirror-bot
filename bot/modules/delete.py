@@ -1,13 +1,12 @@
 import threading
 
-from telegram import Update
 from telegram.ext import CommandHandler
 
 from bot import LOGGER, dispatcher
 from bot.helper.mirror_utils.upload_utils import gdriveTools
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
-from bot.helper.telegram_helper.message_utils import auto_delete_message, sendMessage
+from bot.helper.telegram_helper.message_utils import auto_delete_message, send_message
 
 
 def deletefile(update, context):
@@ -23,7 +22,7 @@ def deletefile(update, context):
         drive = gdriveTools.GoogleDriveHelper()
         msg = drive.deletefile(link)
     LOGGER.info(f"DeleteFileCmd : {msg}")
-    reply_message = sendMessage(msg, context.bot, update)
+    reply_message = send_message(msg, context.bot, update)
 
     threading.Thread(
         target=auto_delete_message, args=(context.bot, update.message, reply_message)

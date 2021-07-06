@@ -1,16 +1,13 @@
 import asyncio
 import html
 import itertools
-import json
-import os
 import time
 from urllib.parse import quote as urlencode
 from urllib.parse import urlsplit
 
 import aiohttp
 import feedparser
-import requests
-from pyrogram import Client, emoji, filters
+from pyrogram import emoji, filters
 from pyrogram.handlers import CallbackQueryHandler, MessageHandler
 from pyrogram.parser import html as pyrogram_html
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -19,6 +16,7 @@ from telegram.ext import CommandHandler
 
 from bot import IMAGE_URL, app, dispatcher
 from bot.helper import custom_filters
+from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
 
 search_lock = asyncio.Lock()
@@ -102,7 +100,7 @@ async def init_search(client, message, query, sukebei):
     else:
         buttons = [
             InlineKeyboardButton(f"1/{pages}", "nyaa_nop"),
-            InlineKeyboardButton(f"Next", "nyaa_next"),
+            InlineKeyboardButton("Next", "nyaa_next"),
         ]
         if pages == 1:
             buttons.pop()
@@ -157,9 +155,9 @@ async def nyaa_callback(client, callback_query):
                 return
             text, pages, ttl = await return_search(query, current_page, sukebei)
         buttons = [
-            InlineKeyboardButton(f"Prev", "nyaa_back"),
+            InlineKeyboardButton("Prev", "nyaa_back"),
             InlineKeyboardButton(f"{current_page}/{pages}", "nyaa_nop"),
-            InlineKeyboardButton(f"Next", "nyaa_next"),
+            InlineKeyboardButton("Next", "nyaa_next"),
         ]
         if ttl_ended:
             buttons = [InlineKeyboardButton("Search Expired", "nyaa_nop")]
@@ -243,13 +241,11 @@ class TorrentSearch:
         return string
 
     async def update_message(self):
-        prevBtn = InlineKeyboardButton(
-            f"Prev", callback_data=f"{self.command}_previous"
-        )
+        prevBtn = InlineKeyboardButton("Prev", callback_data=f"{self.command}_previous")
         delBtn = InlineKeyboardButton(
             f"{emoji.CROSS_MARK}", callback_data=f"{self.command}_delete"
         )
-        nextBtn = InlineKeyboardButton(f"Next", callback_data=f"{self.command}_next")
+        nextBtn = InlineKeyboardButton("Next", callback_data=f"{self.command}_next")
 
         inline = []
         if self.index != 0:
@@ -294,17 +290,12 @@ class TorrentSearch:
                     self.response_range = range(
                         0, len(self.response), self.RESULT_LIMIT
                     )
-        except:
+        except Exception:
             await self.message.edit("No Results Found.")
             return
         await self.update_message()
 
     async def delete(self, client, message):
-        index = 0
-        query = None
-        message = None
-        response = None
-        response_range = None
         await self.message.delete()
 
     async def previous(self, client, message):
@@ -406,7 +397,7 @@ def searchhelp(update, context):
 
 
 SEARCHHELP_HANDLER = CommandHandler(
-    "tshelp",
+    BotCommands.TsHelpCommand,
     searchhelp,
     filters=(CustomFilters.authorized_chat | CustomFilters.authorized_user)
     & CustomFilters.mirror_owner_filter,

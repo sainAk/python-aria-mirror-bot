@@ -6,9 +6,9 @@ from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.message_utils import (
-    deleteMessage,
-    sendMarkup,
-    sendMessage,
+    delete_message,
+    send_markup,
+    send_message,
 )
 
 
@@ -20,34 +20,34 @@ def cloneNode(update, context):
         if CLONE_LIMIT is not None or STOP_DUPLICATE_CLONE:
             res, clonesize, name = gd.clonehelper(link)
             if res != "":
-                sendMessage(res, context.bot, update)
+                send_message(res, context.bot, update)
                 return
             if STOP_DUPLICATE_CLONE:
-                LOGGER.info(f"Checking File/Folder if already in Drive...")
+                LOGGER.info("Checking File/Folder if already in Drive...")
                 smsg, button = gd.drive_list(name)
                 if smsg:
                     msg3 = "File/Folder is already available in Drive.\nHere are the search results:"
-                    sendMarkup(msg3, context.bot, update, button)
+                    send_markup(msg3, context.bot, update, button)
                     return
             if CLONE_LIMIT is not None:
-                LOGGER.info(f"Checking File/Folder Size...")
+                LOGGER.info("Checking File/Folder Size...")
                 limit = CLONE_LIMIT
                 limit = limit.split(" ", maxsplit=1)
                 limitint = int(limit[0])
                 msg2 = f"Failed, Clone limit is {CLONE_LIMIT}.\nYour File/Folder size is {get_readable_file_size(clonesize)}."
                 if "G" in limit[1] or "g" in limit[1]:
                     if clonesize > limitint * 1024 ** 3:
-                        sendMessage(msg2, context.bot, update)
+                        send_message(msg2, context.bot, update)
                         return
                 elif "T" in limit[1] or "t" in limit[1]:
                     if clonesize > limitint * 1024 ** 4:
-                        sendMessage(msg2, context.bot, update)
+                        send_message(msg2, context.bot, update)
                         return
-        msg = sendMessage(f"Cloning: <code>{link}</code>", context.bot, update)
+        msg = send_message(f"Cloning: <code>{link}</code>", context.bot, update)
         result, button = gd.clone(link)
-        deleteMessage(context.bot, msg)
+        delete_message(context.bot, msg)
         if button == "":
-            sendMessage(result, context.bot, update)
+            send_message(result, context.bot, update)
         else:
             if update.message.from_user.username:
                 uname = f"@{update.message.from_user.username}"
@@ -55,9 +55,9 @@ def cloneNode(update, context):
                 uname = f'<a href="tg://user?id={update.message.from_user.id}">{update.message.from_user.first_name}</a>'
             if uname is not None:
                 cc = f"\n\ncc: {uname}"
-            sendMarkup(result + cc, context.bot, update, button)
+            send_markup(result + cc, context.bot, update, button)
     else:
-        sendMessage("Provide G-Drive Shareable Link to Clone.", context.bot, update)
+        send_message("Provide G-Drive Shareable Link to Clone.", context.bot, update)
 
 
 clone_handler = CommandHandler(

@@ -2,15 +2,17 @@ import logging
 import threading
 import time
 
-from bot import LOGGER, app, download_dict, download_dict_lock
+from bot import app, download_dict, download_dict_lock
+from bot.helper.mirror_utils.status_utils.telegram_download_status import (
+    TelegramDownloadStatus,
+)
 
-from ..status_utils.telegram_download_status import TelegramDownloadStatus
 from .download_helper import DownloadHelper
 
 global_lock = threading.Lock()
 GLOBAL_GID = set()
 
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
+LOGGER = logging.getLogger(__name__)
 
 
 class TelegramDownloadHelper(DownloadHelper):
