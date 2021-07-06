@@ -1,3 +1,5 @@
+# flake8: noqa: F403
+import logging
 import os
 import shutil
 import signal
@@ -10,6 +12,7 @@ import pytz
 from pyrogram import idle
 from telegram import BotCommand, ParseMode
 from telegram.ext import CommandHandler
+from telegram.inline.inlinekeyboardmarkup import InlineKeyboardMarkup
 
 from bot import (
     IGNORE_PENDING_REQUESTS,
@@ -20,10 +23,14 @@ from bot import (
     dispatcher,
     updater,
 )
-from bot.helper.ext_utils import fs_utils
-from bot.helper.telegram_helper import button_build
+from bot.helper.ext_utils.fs_utils import clean_all, exit_clean_up, start_cleanup
 from bot.helper.telegram_helper.bot_commands import BotCommands
-from bot.helper.telegram_helper.message_utils import *
+from bot.helper.telegram_helper.button_builder import ButtonMaker
+from bot.helper.telegram_helper.message_utils import (
+    edit_message,
+    send_log_file,
+    send_message,
+)
 
 from .helper.ext_utils.bot_utils import get_readable_file_size, get_readable_time
 from .helper.telegram_helper.filters import CustomFilters
@@ -35,17 +42,20 @@ from .modules import (
     count,
     delete,
     eval,
-    list,
+    list_files,
     mediainfo,
     mirror,
     mirror_status,
-    search,
     shell,
     speedtest,
+    torrent_search,
     updates,
     usage,
     watch,
 )
+
+LOGGER = logging.getLogger(__name__)
+
 
 now = datetime.now(pytz.timezone("Asia/Jakarta"))
 
@@ -82,9 +92,8 @@ def start(update, context):
 This bot can mirror all your links to Google Drive!
 Type /{BotCommands.HelpCommand} to get a list of available commands
 """
-    buttons = button_build.ButtonMaker()
-    buttons.buildbutton("Repo", "https://github.com/breakdowns/slam-mirrorbot")
-    buttons.buildbutton("Support Group", "https://t.me/SlamMirrorSupport")
+    buttons = ButtonMaker()
+    buttons.buildbutton("Repo", "https://github.com/sainak/python-aria-mirror-bot/")
     reply_markup = InlineKeyboardMarkup(buttons.build_menu(2))
     LOGGER.info(
         "UID: {} - UN: {} - MSG: {}".format(
@@ -94,7 +103,7 @@ Type /{BotCommands.HelpCommand} to get a list of available commands
     uptime = get_readable_time((time.time() - botStartTime))
     if CustomFilters.authorized_user(update) or CustomFilters.authorized_chat(update):
         if update.message.chat.type == "private":
-            sendMessage(
+            send_message(
                 f"Hey I'm Alive 🙂\nSince: <code>{uptime}</code>", context.bot, update
             )
         else:
@@ -105,28 +114,28 @@ Type /{BotCommands.HelpCommand} to get a list of available commands
                 reply_markup=reply_markup,
             )
     else:
-        sendMessage(f"Oops! not a Authorized user.", context.bot, update)
+        send_message(f"Oops! not a Authorized user.", context.bot, update)
 
 
 def restart(update, context):
-    restart_message = sendMessage("Restarting, Please wait!", context.bot, update)
+    restart_message = send_message("Restarting, Please wait!", context.bot, update)
     # Save restart message object in order to reply to it after restarting
     with open(".restartmsg", "w") as f:
         f.truncate(0)
         f.write(f"{restart_message.chat.id}\n{restart_message.message_id}\n")
-    fs_utils.clean_all()
+    clean_all()
     os.execl(executable, executable, "-m", "bot")
 
 
 def ping(update, context):
     start_time = int(round(time.time() * 1000))
-    reply = sendMessage("Starting Ping", context.bot, update)
+    reply = send_message("Starting Ping", context.bot, update)
     end_time = int(round(time.time() * 1000))
-    editMessage(f"{end_time - start_time} ms", reply)
+    edit_message(f"{end_time - start_time} ms", reply)
 
 
 def log(update, context):
-    sendLogFile(context.bot, update)
+    send_log_file(context.bot, update)
 
 
 def bot_help(update, context):
@@ -147,7 +156,7 @@ def bot_help(update, context):
 /{BotCommands.PingCommand}: Check how long it takes to Ping the Bot
 /{BotCommands.SpeedCommand}: Check Internet Speed of the Host
 /{BotCommands.MediaInfoCommand}: Get detailed info about replied media (Only for Telegram file)
-/tshelp: Get help for Torrent search module
+/{BotCommands.TsHelpCommand}: Get help for Torrent search module
 """
 
     help_string_adm = f"""
@@ -168,9 +177,9 @@ def bot_help(update, context):
 """
 
     if CustomFilters.sudo_user(update) or CustomFilters.owner_filter(update):
-        sendMessage(help_string + help_string_adm, context.bot, update)
+        send_message(help_string + help_string_adm, context.bot, update)
     else:
-        sendMessage(help_string, context.bot, update)
+        send_message(help_string, context.bot, update)
 
 
 botcmds = [
@@ -196,12 +205,12 @@ botcmds = [
     BotCommand(
         f"{BotCommands.MediaInfoCommand}", "Get detailed info about replied media"
     ),
-    BotCommand(f"/tshelp", "Get help for Torrent search module"),
+    BotCommand(f"{BotCommands.TsHelpCommand}", "Get help for Torrent search module"),
 ]
 
 
 def main():
-    fs_utils.start_cleanup()
+    start_cleanup()
     # Check if the bot is restarting
     if os.path.isfile(".restartmsg"):
         with open(".restartmsg") as f:
@@ -210,7 +219,11 @@ def main():
         os.remove(".restartmsg")
     bot.set_my_commands(botcmds)
 
-    start_handler = CommandHandler(BotCommands.StartCommand, start, run_async=True)
+    start_handler = CommandHandler(
+        BotCommands.StartCommand,
+        start,
+        run_async=True,
+    )
     ping_handler = CommandHandler(
         BotCommands.PingCommand,
         ping,
@@ -249,7 +262,7 @@ def main():
     dispatcher.add_handler(log_handler)
     updater.start_polling(drop_pending_updates=IGNORE_PENDING_REQUESTS)
     LOGGER.info("Bot Started!")
-    signal.signal(signal.SIGINT, fs_utils.exit_clean_up)
+    signal.signal(signal.SIGINT, exit_clean_up)
 
 
 app.start()

@@ -88,7 +88,7 @@ try:
     achats = achats.split(" ")
     for chats in achats:
         AUTHORIZED_CHATS.add(int(chats))
-except:
+except KeyError:
     pass
 
 try:
@@ -106,7 +106,7 @@ try:
     UPSTREAM_REPO = getConfig("UPSTREAM_REPO")
     UPSTREAM_BRANCH = getConfig("UPSTREAM_BRANCH")
 except KeyError as e:
-    LOGGER.error("One or more env variables missing! Exiting now")
+    LOGGER.error(f"One or more env variables missing! Exiting now[{e}]")
     exit(1)
 
 try:

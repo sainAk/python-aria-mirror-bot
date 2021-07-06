@@ -1,3 +1,4 @@
+import logging
 import os
 import pathlib
 import random
@@ -33,7 +34,11 @@ from bot import (
     download_dict_lock,
 )
 from bot.helper.ext_utils import bot_utils, fs_utils
-from bot.helper.ext_utils.bot_utils import get_mega_link_type, setInterval
+from bot.helper.ext_utils.bot_utils import (
+    get_mega_link_type,
+    get_readable_file_size,
+    setInterval,
+)
 from bot.helper.ext_utils.exceptions import (
     DirectDownloadLinkException,
     NotSupportedExtractionArchive,
@@ -52,10 +57,19 @@ from bot.helper.mirror_utils.status_utils.gdownload_status import DownloadStatus
 from bot.helper.mirror_utils.status_utils.tar_status import TarStatus
 from bot.helper.mirror_utils.status_utils.upload_status import UploadStatus
 from bot.helper.mirror_utils.upload_utils import gdriveTools
-from bot.helper.telegram_helper import button_build
 from bot.helper.telegram_helper.bot_commands import BotCommands
+from bot.helper.telegram_helper.button_builder import ButtonMaker
 from bot.helper.telegram_helper.filters import CustomFilters
-from bot.helper.telegram_helper.message_utils import *
+from bot.helper.telegram_helper.message_utils import (
+    delete_all_messages,
+    send_markup,
+    send_message,
+    send_status_message,
+    update_all_messages,
+)
+
+LOGGER = logging.getLogger(__name__)
+
 
 ariaDlManager = AriaDownloadHelper()
 ariaDlManager.start_listener()
@@ -158,7 +172,7 @@ class MirrorListener(listeners.MirrorListeners):
         else:
             uname = f'<a href="tg://user?id={self.message.from_user.id}">{self.message.from_user.first_name}</a>'
         msg = f"{uname} your download has been stopped due to: {error}"
-        sendMessage(msg, self.bot, self.update)
+        send_message(msg, self.bot, self.update)
         if count == 0:
             self.clean()
         else:
@@ -181,7 +195,7 @@ class MirrorListener(listeners.MirrorListeners):
                 msg += f"\n<b>Files: </b><code>{files}</code>"
             else:
                 msg += f"\n<b>Type: </b><code>{typ}</code>"
-            buttons = button_build.ButtonMaker()
+            buttons = ButtonMaker()
             if SHORTENER is not None and SHORTENER_API is not None:
                 surl = requests.get(
                     f"https://{SHORTENER}/api?api={SHORTENER_API}&url={link}&format=text"
@@ -238,7 +252,7 @@ class MirrorListener(listeners.MirrorListeners):
                 pass
             del download_dict[self.uid]
             count = len(download_dict)
-        sendMarkup(
+        send_markup(
             msg, self.bot, self.update, InlineKeyboardMarkup(buttons.build_menu(2))
         )
         if count == 0:
@@ -255,7 +269,7 @@ class MirrorListener(listeners.MirrorListeners):
                 pass
             del download_dict[self.message.message_id]
             count = len(download_dict)
-        sendMessage(e_str, self.bot, self.update)
+        send_message(e_str, self.bot, self.update)
         if count == 0:
             self.clean()
         else:
@@ -283,7 +297,7 @@ def _mirror(bot, update, isTar=False, extract=False):
     try:
         ussr = urllib.parse.quote(mesg[1], safe="")
         pssw = urllib.parse.quote(mesg[2], safe="")
-    except:
+    except Exception:
         ussr = ""
         pssw = ""
     if ussr != "" and pssw != "":
@@ -317,7 +331,7 @@ def _mirror(bot, update, isTar=False, extract=False):
                     tg_downloader.add_download(
                         reply_to, f"{DOWNLOAD_DIR}{listener.uid}/", name
                     )
-                    sendStatusMessage(update, bot)
+                    send_status_message(update, bot)
                     if len(Interval) == 0:
                         Interval.append(
                             setInterval(
@@ -330,7 +344,7 @@ def _mirror(bot, update, isTar=False, extract=False):
     else:
         tag = None
     if not bot_utils.is_url(link) and not bot_utils.is_magnet(link):
-        sendMessage("No download source provided", bot, update)
+        send_message("No download source provided", bot, update)
         return
 
     try:
@@ -338,17 +352,17 @@ def _mirror(bot, update, isTar=False, extract=False):
     except DirectDownloadLinkException as e:
         LOGGER.info(f"{link}: {e}")
         if "ERROR:" in str(e):
-            sendMessage(f"{e}", bot, update)
+            send_message(f"{e}", bot, update)
             return
         if "Youtube" in str(e):
-            sendMessage(f"ERROR: {e}", bot, update)
+            send_message(f"ERROR: {e}", bot, update)
             return
 
     listener = MirrorListener(bot, update, pswd, isTar, tag, extract)
 
     if bot_utils.is_gdrive_link(link):
         if not isTar and not extract:
-            sendMessage(
+            send_message(
                 f"Use /{BotCommands.CloneCommand} To Copy Google Drive File/Folder",
                 bot,
                 update,
@@ -356,21 +370,21 @@ def _mirror(bot, update, isTar=False, extract=False):
             return
         res, size, name = gdriveTools.GoogleDriveHelper().clonehelper(link)
         if res != "":
-            sendMessage(res, bot, update)
+            send_message(res, bot, update)
             return
         if TAR_UNZIP_LIMIT is not None:
-            LOGGER.info(f"Checking File/Folder Size")
+            LOGGER.info("Checking File/Folder Size")
             limit = TAR_UNZIP_LIMIT
             limit = limit.split(" ", maxsplit=1)
             limitint = int(limit[0])
             msg = f"Failed, Tar/Unzip limit is {TAR_UNZIP_LIMIT}.\nYour File/Folder size is {get_readable_file_size(size)}."
             if "G" in limit[1] or "g" in limit[1]:
                 if size > limitint * 1024 ** 3:
-                    sendMessage(msg, listener.bot, listener.update)
+                    send_message(msg, listener.bot, listener.update)
                     return
             elif "T" in limit[1] or "t" in limit[1]:
                 if size > limitint * 1024 ** 4:
-                    sendMessage(msg, listener.bot, listener.update)
+                    send_message(msg, listener.bot, listener.update)
                     return
         LOGGER.info(f"Download Name : {name}")
         drive = gdriveTools.GoogleDriveHelper(name, listener)
@@ -384,15 +398,15 @@ def _mirror(bot, update, isTar=False, extract=False):
             Interval.append(
                 setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages)
             )
-        sendStatusMessage(update, bot)
+        send_status_message(update, bot)
         drive.download(link)
 
     elif bot_utils.is_mega_link(link):
         link_type = get_mega_link_type(link)
         if link_type == "folder" and BLOCK_MEGA_FOLDER:
-            sendMessage("Mega folder are blocked!", bot, update)
+            send_message("Mega folder are blocked!", bot, update)
         elif BLOCK_MEGA_LINKS:
-            sendMessage("Mega links are blocked!", bot, update)
+            send_message("Mega links are blocked!", bot, update)
         else:
             mega_dl = MegaDownloadHelper()
             mega_dl.add_download(link, f"{DOWNLOAD_DIR}/{listener.uid}/", listener)
@@ -400,7 +414,7 @@ def _mirror(bot, update, isTar=False, extract=False):
         ariaDlManager.add_download(
             link, f"{DOWNLOAD_DIR}/{listener.uid}/", listener, name
         )
-        sendStatusMessage(update, bot)
+        send_status_message(update, bot)
     if len(Interval) == 0:
         Interval.append(
             setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages)

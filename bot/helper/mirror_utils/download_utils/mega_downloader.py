@@ -1,3 +1,4 @@
+import logging
 import os
 import random
 import string
@@ -6,7 +7,6 @@ import threading
 from mega import MegaApi, MegaError, MegaListener, MegaRequest, MegaTransfer
 
 from bot import (
-    LOGGER,
     MEGA_API_KEY,
     MEGA_EMAIL_ID,
     MEGA_LIMIT,
@@ -23,7 +23,13 @@ from bot.helper.ext_utils.bot_utils import (
 )
 from bot.helper.mirror_utils.status_utils.mega_download_status import MegaDownloadStatus
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
-from bot.helper.telegram_helper.message_utils import *
+from bot.helper.telegram_helper.message_utils import (
+    send_markup,
+    send_message,
+    send_status_message,
+)
+
+LOGGER = logging.getLogger(__name__)
 
 
 class MegaDownloaderException(Exception):
@@ -197,7 +203,7 @@ class MegaDownloadHelper:
         if mega_listener.error is not None:
             return listener.onDownloadError(str(mega_listener.error))
         if STOP_DUPLICATE_MEGA:
-            LOGGER.info(f"Checking File/Folder if already in Drive")
+            LOGGER.info("Checking File/Folder if already in Drive")
             mname = node.getName()
             if listener.isTar:
                 mname = mname + ".tar"
@@ -208,11 +214,11 @@ class MegaDownloadHelper:
                 smsg, button = gd.drive_list(mname)
             if smsg:
                 msg1 = "File/Folder is already available in Drive.\nHere are the search results:"
-                sendMarkup(msg1, listener.bot, listener.update, button)
+                send_markup(msg1, listener.bot, listener.update, button)
                 return
         if MEGA_LIMIT is not None or TAR_UNZIP_LIMIT is not None:
             limit = None
-            LOGGER.info(f"Checking File/Folder Size")
+            LOGGER.info("Checking File/Folder Size")
             if TAR_UNZIP_LIMIT is not None and (listener.isTar or listener.extract):
                 limit = TAR_UNZIP_LIMIT
                 msg3 = f"Failed, Tar/Unzip limit is {TAR_UNZIP_LIMIT}.\nYour File/Folder size is {get_readable_file_size(api.getSize(node))}."
@@ -224,11 +230,11 @@ class MegaDownloadHelper:
                 limitint = int(limit[0])
                 if "G" in limit[1] or "g" in limit[1]:
                     if api.getSize(node) > limitint * 1024 ** 3:
-                        sendMessage(msg3, listener.bot, listener.update)
+                        send_message(msg3, listener.bot, listener.update)
                         return
                 elif "T" in limit[1] or "t" in limit[1]:
                     if api.getSize(node) > limitint * 1024 ** 4:
-                        sendMessage(msg3, listener.bot, listener.update)
+                        send_message(msg3, listener.bot, listener.update)
                         return
         with download_dict_lock:
             download_dict[listener.uid] = MegaDownloadStatus(mega_listener, listener)
@@ -237,5 +243,5 @@ class MegaDownloadHelper:
             random.SystemRandom().choices(string.ascii_letters + string.digits, k=8)
         )
         mega_listener.setValues(node.getName(), api.getSize(node), gid)
-        sendStatusMessage(listener.update, listener.bot)
+        send_status_message(listener.update, listener.bot)
         executor.do(api.startDownload, (node, path))

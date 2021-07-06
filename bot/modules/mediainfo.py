@@ -2,13 +2,13 @@
 # Copyright (C) 2020 BY - GitHub.com/code-rgb [TG - @deleteduser420]
 # All rights reserved.
 
-import os
-
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from bot import app
-from bot.helper import post_to_telegraph, runcmd, safe_filename
+from bot.helper.ext_utils.fs_utils import safe_filename
+from bot.helper.ext_utils.sh_utils import runcmd
+from bot.helper.ext_utils.telegraph_utils import post_to_telegraph
 from bot.helper.telegram_helper.bot_commands import BotCommands
 
 

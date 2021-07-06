@@ -3,7 +3,6 @@ import time
 
 import psutil
 from telegram import InlineKeyboardMarkup
-from telegram.error import BadRequest, TimedOut
 from telegram.message import Message
 from telegram.update import Update
 
@@ -25,7 +24,7 @@ from bot.helper.ext_utils.bot_utils import (
 )
 
 
-def sendMessage(text: str, bot, update: Update):
+def send_message(text: str, bot, update: Update):
     try:
         return bot.send_message(
             update.message.chat_id,
@@ -37,7 +36,7 @@ def sendMessage(text: str, bot, update: Update):
         LOGGER.error(str(e))
 
 
-def sendMarkup(text: str, bot, update: Update, reply_markup: InlineKeyboardMarkup):
+def send_markup(text: str, bot, update: Update, reply_markup: InlineKeyboardMarkup):
     return bot.send_message(
         update.message.chat_id,
         reply_to_message_id=update.message.message_id,
@@ -47,7 +46,7 @@ def sendMarkup(text: str, bot, update: Update, reply_markup: InlineKeyboardMarku
     )
 
 
-def editMessage(text: str, message: Message, reply_markup=None):
+def edit_message(text: str, message: Message, reply_markup=None):
     try:
         bot.edit_message_text(
             text=text,
@@ -60,14 +59,14 @@ def editMessage(text: str, message: Message, reply_markup=None):
         LOGGER.error(str(e))
 
 
-def deleteMessage(bot, message: Message):
+def delete_message(bot, message: Message):
     try:
         bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
     except Exception as e:
         LOGGER.error(str(e))
 
 
-def sendLogFile(bot, update: Update):
+def send_log_file(bot, update: Update):
     with open("log.txt", "rb") as f:
         bot.send_document(
             document=f,
@@ -82,8 +81,8 @@ def auto_delete_message(bot, cmd_message: Message, bot_message: Message):
         time.sleep(AUTO_DELETE_MESSAGE_DURATION)
         try:
             # Skip if None is passed meaning we don't want to delete bot xor cmd message
-            deleteMessage(bot, cmd_message)
-            deleteMessage(bot, bot_message)
+            delete_message(bot, cmd_message)
+            delete_message(bot, bot_message)
         except AttributeError:
             pass
 
@@ -92,7 +91,7 @@ def delete_all_messages():
     with status_reply_dict_lock:
         for message in list(status_reply_dict.values()):
             try:
-                deleteMessage(bot, message)
+                delete_message(bot, message)
                 del status_reply_dict[message.chat.id]
             except Exception as e:
                 LOGGER.error(str(e))
@@ -132,13 +131,13 @@ def update_all_messages():
                 if len(msg) == 0:
                     msg = "Starting DL"
                 try:
-                    editMessage(msg, status_reply_dict[chat_id])
+                    edit_message(msg, status_reply_dict[chat_id])
                 except Exception as e:
                     LOGGER.error(str(e))
                 status_reply_dict[chat_id].text = msg
 
 
-def sendStatusMessage(msg, bot):
+def send_status_message(msg, bot):
     total, used, free = shutil.disk_usage(".")
     free = get_readable_file_size(free)
     currentTime = get_readable_time(time.time() - botStartTime)
@@ -170,7 +169,7 @@ def sendStatusMessage(msg, bot):
         if msg.message.chat.id in list(status_reply_dict.keys()):
             try:
                 message = status_reply_dict[msg.message.chat.id]
-                deleteMessage(bot, message)
+                delete_message(bot, message)
                 del status_reply_dict[msg.message.chat.id]
             except Exception as e:
                 LOGGER.error(str(e))
@@ -178,5 +177,21 @@ def sendStatusMessage(msg, bot):
                 pass
         if len(progress) == 0:
             progress = "Starting DL"
-        message = sendMessage(progress, bot, msg)
+        message = send_message(progress, bot, msg)
         status_reply_dict[msg.message.chat.id] = message
+
+
+# Implement by https://github.com/jusidama18
+# Setting Message
+def get_text(message: Message):  # -> None | str: #TODO python 3.10
+    """Extract Text From Commands"""
+    text_to_return = message.text
+    if message.text is None:
+        return None
+    if " " in text_to_return:
+        try:
+            return message.text.split(None, 1)[1]
+        except IndexError:
+            return None
+    else:
+        return None

@@ -89,7 +89,7 @@ def do(func, bot, update):
     try:
         with redirect_stdout(stdout):
             func_return = func()
-    except Exception as e:
+    except Exception:
         value = stdout.getvalue()
         return f"{value}{traceback.format_exc()}"
     else:
@@ -101,7 +101,7 @@ def do(func, bot, update):
             else:
                 try:
                     result = f"{repr(eval(body, env))}"
-                except:
+                except Exception:
                     pass
         else:
             result = f"{value}{func_return}"

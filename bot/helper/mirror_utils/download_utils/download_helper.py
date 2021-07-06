@@ -2,11 +2,6 @@
 import threading
 
 
-class MethodNotImplementedError(NotImplementedError):
-    def __init__(self):
-        super(self, "Not implemented method")
-
-
 class DownloadHelper:
     def __init__(self):
         self.name = (
@@ -22,8 +17,8 @@ class DownloadHelper:
         self._resource_lock = threading.Lock()
 
     def add_download(self, link: str, path):
-        raise MethodNotImplementedError
+        raise NotImplementedError
 
     def cancel_download(self):
         # Returns None if successfully cancelled, else error string
-        raise MethodNotImplementedError
+        raise NotImplementedError
