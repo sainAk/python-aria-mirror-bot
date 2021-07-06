@@ -10,7 +10,7 @@
 - So if you have any issue then check first that issue is in official repo or not, You are only allowed to report that issue in bot support group if that issue is also present in official repo.
 
 
-**Slam Mirror Bot** is a _multipurpose_ Telegram Bot writen in Python for mirroring files on the Internet to our beloved Google Drive.
+**Mirror Bot** is a _multipurpose_ Telegram Bot writen in Python for mirroring files on the Internet to our beloved Google Drive.
 
 # Features supported:
 ## Additional Features
@@ -71,7 +71,7 @@ Deploying is pretty much straight forward and is divided into several steps as f
 
 - Clone this repo:
 ```
-git clone https://github.com/breakdowns/slam-mirrorbot mirrorbot/
+git clone https://github.com/sainak/python-aria-mirror-bot.git mirrorbot/
 cd mirrorbot
 ```
 
@@ -128,19 +128,19 @@ Fill up rest of the fields. Meaning of each fields are discussed below:
 - **TELEGRAM_API**: This is to authenticate to your Telegram account for downloading Telegram files. You can get this from https://my.telegram.org DO NOT put this in quotes.
 - **TELEGRAM_HASH**: This is to authenticate to your Telegram account for downloading Telegram files. You can get this from https://my.telegram.org
 - **OWNER_ID**: The Telegram user ID (not username) of the Owner of the bot
-- **DATABASE_URL**: Your Database URL. See [Generate Database](https://github.com/breakdowns/slam-mirrorbot/tree/master#generate-database) to generate database. (**NOTE**: If you deploying on Heroku using Heroku button, no need to generate database manually, because it will automatic generate database when first deploying)
+- **DATABASE_URL**: Your Database URL. See [Generate Database](#generate-database) to generate database. (**NOTE**: If you deploying on Heroku using Heroku button, no need to generate database manually, because it will automatic generate database when first deploying)
 - **GDRIVE_FOLDER_ID**: This is the folder ID of the Google Drive Folder to which you want to upload all the mirrors.
 - **DOWNLOAD_DIR**: The path to the local folder where the downloads should be downloaded to
 - **DOWNLOAD_STATUS_UPDATE_INTERVAL**: A short interval of time in seconds after which the Mirror progress message is updated. (I recommend to keep it `5` seconds at least)  
 - **AUTO_DELETE_MESSAGE_DURATION**: Interval of time (in seconds), after which the bot deletes it's message (and command message) which is expected to be viewed instantly. (**Note**: Set to `-1` to never automatically delete messages)
-- **UPSTREAM_REPO**: Link for Bot Upstream Repo, if you want default update, fill ```https://github.com/breakdowns/slam-mirrorbot```.
+- **UPSTREAM_REPO**: Link for Bot Upstream Repo, if you want default update, fill ```https://github.com/sainak/python-aria-mirror-bot```.
 - **UPSTREAM_BRANCH**: Branch name for Bot Upstream Repo, fill ```master```.
 ### Optional Field
 - **ACCOUNTS_ZIP_URL**: Only if you want to load your Service Account externally from an Index Link. Archive your Service Account json files to a zip file directly (don't archive the accounts folder. Select all the jsons inside and zip them only instead. Name the zip file with whatever you want, it doesn't matter). Fill this with the direct link of that file.
 - **TOKEN_PICKLE_URL**: Only if you want to load your **token.pickle** externally from an Index Link. Fill this with the direct link of that file.
 - **AUTHORIZED_CHATS**: Fill user_id and chat_id of you want to authorize, Seprate them with space, Examples: ```-0123456789 -1122334455 6915401739```.
 - **IS_TEAM_DRIVE**: Set to `True` if `GDRIVE_FOLDER_ID` is from a Team Drive else `False` or Leave it empty.
-- **USE_SERVICE_ACCOUNTS**: (Leave empty if unsure) Whether to use Service Accounts or not. For this to work see [Using Service Accounts](https://github.com/breakdowns/slam-mirrorbot#generate-service-accounts-what-is-service-account) section below.
+- **USE_SERVICE_ACCOUNTS**: (Leave empty if unsure) Whether to use Service Accounts or not. For this to work see [Using Service Accounts](#generate-service-accounts-what-is-service-account) section below.
 - **INDEX_URL**: Refer to https://gitlab.com/ParveenBhadooOfficial/Google-Drive-Index The URL should not have any trailing '/'
 - **MEGA_API_KEY**: Mega.nz api key to mirror mega.nz links. Get it from [Mega SDK Page](https://mega.nz/sdk)
 - **MEGA_EMAIL_ID**: Your email id you used to sign up on mega.nz for using premium accounts (Leave th)
@@ -212,7 +212,7 @@ sudo docker run mirrorbot
 
 ## Deploying on Heroku
 
-- Give stars and Fork this repo then upload **token.pickle** to your forks, or you can upload your **token.pickle** to your Index and put your **token.pickle** link to **TOKEN_PICKLE_URL**. How to generate **token.pickle**? [Read here](https://github.com/breakdowns/slam-mirrorbot#getting-google-oauth-api-credential-file)
+- Give stars and Fork this repo then upload **token.pickle** to your forks, or you can upload your **token.pickle** to your Index and put your **token.pickle** link to **TOKEN_PICKLE_URL**. How to generate **token.pickle**? [Read here](#getting-google-oauth-api-credential-file)
 - Hit the **DEPLOY TO HEROKU** button and follow the further instructions in the screen
 - Recommended to use 1 App in 1 Heroku accounts
 
@@ -308,4 +308,4 @@ Thanks to:
 - [anasty17](https://github.com/anasty17) for some features & help
 - [breakdowns](https://github.com/breakdowns) for slam-mirrorbot
 
-And many more people who aren't mentioned here, but may be found in [Contributors](https://github.com/breakdowns/slam-mirrorbot/graphs/contributors).
+And many more people who aren't mentioned here, but may be found in [Contributors](https://github.com/sainak/python-aria-mirror-bot/graphs/contributors).

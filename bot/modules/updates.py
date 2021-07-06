@@ -3,16 +3,15 @@
 
 import subprocess
 import sys
-from datetime import datetime
-from os import environ, execle, path, remove
+from os import environ, execle
 
-import heroku3
 from git import Repo
-from git.exc import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
+from git.exc import GitCommandError, InvalidGitRepositoryError
 from pyrogram import filters
 
 from bot import OWNER_ID, UPSTREAM_BRANCH, UPSTREAM_REPO, app
-from bot.helper import HEROKU_URL, get_text, runcmd
+from bot.helper.ext_utils.heroku_utils import fetch_heroku_git_url
+from bot.helper.ext_utils.sh_utils import runcmd
 from bot.helper.telegram_helper.bot_commands import BotCommands
 
 REPO_ = UPSTREAM_REPO
@@ -28,7 +27,7 @@ async def update_it(client, message):
         repo = Repo()
     except GitCommandError:
         return await msg_.edit(
-            "**Invalid Git Command. Please Report This Bug To [Support Group](https://t.me/SlamMirrorSupport)**"
+            "**Invalid Git Command. Please Report This Bug on [GitHub](https://github.com/sainak/python-aria-mirror-bot/)**"
         )
     except InvalidGitRepositoryError:
         repo = Repo.init()
@@ -50,29 +49,26 @@ async def update_it(client, message):
         pass
     ups_rem = repo.remote("upstream")
     ups_rem.fetch(UPSTREAM_BRANCH)
-    if not HEROKU_URL:
+    heroku_url = fetch_heroku_git_url()
+    if not heroku_url:
         try:
             ups_rem.pull(UPSTREAM_BRANCH)
         except GitCommandError:
             repo.git.reset("--hard", "FETCH_HEAD")
         await runcmd("pip3 install --no-cache-dir -r requirements.txt")
         await msg_.edit("`Updated Sucessfully! Give Me Some Time To Restart!`")
-        with open("./aria.sh", "rb") as file:
-            script = file.read()
         subprocess.call("./aria.sh", shell=True)
         args = [sys.executable, "-m", "bot"]
         execle(sys.executable, *args, environ)
-        exit()
-        return
     else:
         await msg_.edit("`Heroku Detected! Pushing, Please wait!`")
         ups_rem.fetch(UPSTREAM_BRANCH)
         repo.git.reset("--hard", "FETCH_HEAD")
         if "heroku" in repo.remotes:
             remote = repo.remote("heroku")
-            remote.set_url(HEROKU_URL)
+            remote.set_url(heroku_url)
         else:
-            remote = repo.create_remote("heroku", HEROKU_URL)
+            remote = repo.create_remote("heroku", heroku_url)
         try:
             remote.push(refspec="HEAD:refs/heads/master", force=True)
         except BaseException as error:

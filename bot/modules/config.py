@@ -1,12 +1,12 @@
+# flake8: noqa: F405
 # Implement By https://github.com/jusidama18
 # Based on this https://github.com/DevsExpo/FridayUserbot/blob/master/plugins/heroku_helpers.py
-
 from pyrogram import emoji, filters, types
 
 from bot import *
-from bot import OWNER_ID, app
-from bot.helper import check_heroku, get_text
+from bot.helper.ext_utils.heroku_utils import check_heroku
 from bot.helper.telegram_helper.bot_commands import BotCommands
+from bot.helper.telegram_helper.message_utils import get_text
 
 # Add Variable
 
@@ -63,7 +63,7 @@ __header__ = "📕 **Page** **{}**\n\n"
 @app.on_message(filters.command(BotCommands.ConfigMenuCommand) & filters.user(OWNER_ID))
 async def config_menu(_, message):
     await message.reply(
-        f"**Hello {message.from_user.mention}**,\n\n**If you want to add or set Variable in Heroku use** `/setvar`\n\n**If you want to delete Variable in Heroku use `/delvar`**\n\n**WARNING! Very Recommended to do this command in private since it's contain Bot info.**\n\n**Here's This is Slam-MirrorBot Current Configs**",
+        f"**Hello {message.from_user.mention}**,\n\n**If you want to add or set Variable in Heroku use** `/setvar`\n\n**If you want to delete Variable in Heroku use `/delvar`**\n\n**WARNING! Very Recommended to do this command in private since it's contain Bot info.**\n\n**Here's This is MirrorBot Current Configs**",
         reply_markup=types.InlineKeyboardMarkup(
             [
                 [
