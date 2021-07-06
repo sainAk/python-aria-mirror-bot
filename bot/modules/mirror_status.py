@@ -1,26 +1,24 @@
 import threading
-from time import sleep
 
-from telegram.error import BadRequest
 from telegram.ext import CommandHandler
 
-from bot import (
-    DOWNLOAD_STATUS_UPDATE_INTERVAL,
-    dispatcher,
-    status_reply_dict,
-    status_reply_dict_lock,
-)
+from bot import bot, dispatcher, status_reply_dict, status_reply_dict_lock
 from bot.helper.ext_utils.bot_utils import get_readable_message
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
-from bot.helper.telegram_helper.message_utils import *
+from bot.helper.telegram_helper.message_utils import (
+    auto_delete_message,
+    delete_message,
+    send_message,
+    send_status_message,
+)
 
 
 def mirror_status(update, context):
     message = get_readable_message()
     if len(message) == 0:
         message = "No active downloads"
-        reply_message = sendMessage(message, context.bot, update)
+        reply_message = send_message(message, context.bot, update)
         threading.Thread(
             target=auto_delete_message, args=(bot, update.message, reply_message)
         ).start()
@@ -28,10 +26,10 @@ def mirror_status(update, context):
     index = update.effective_chat.id
     with status_reply_dict_lock:
         if index in status_reply_dict.keys():
-            deleteMessage(bot, status_reply_dict[index])
+            delete_message(bot, status_reply_dict[index])
             del status_reply_dict[index]
-    sendStatusMessage(update, context.bot)
-    deleteMessage(context.bot, update.message)
+    send_status_message(update, context.bot)
+    delete_message(context.bot, update.message)
 
 
 mirror_status_handler = CommandHandler(

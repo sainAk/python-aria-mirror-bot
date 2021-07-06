@@ -10,7 +10,6 @@ for original authorship. """
 
 import json
 import logging
-import math
 import re
 import urllib.parse
 from base64 import standard_b64encode
@@ -18,7 +17,6 @@ from os import popen
 from random import choice
 from urllib.parse import urlparse
 
-import lk21
 import requests
 from bs4 import BeautifulSoup
 from js2py import EvalJs
@@ -94,7 +92,7 @@ def zippy_share(url: str) -> str:
         js_script = bs_obj.find("div", {"class": "center",}).find_all(
             "script"
         )[1]
-    except:
+    except (KeyError, TypeError, IndexError):
         js_script = bs_obj.find("div", {"class": "right",}).find_all(
             "script"
         )[0]
@@ -131,7 +129,6 @@ def yandex_disk(url: str) -> str:
 def cm_ru(url: str) -> str:
     """cloud.mail.ru direct links generator
     Using https://github.com/JrMasterModelBuilder/cmrudl.py"""
-    reply = ""
     try:
         link = re.findall(r"\bhttps?://.*cloud\.mail\.ru\S+", url)[0]
     except IndexError:
@@ -151,7 +148,7 @@ def uptobox(url: str) -> str:
     """Uptobox direct links generator
     based on https://github.com/jovanzers/WinTenCermin"""
     try:
-        link = re.findall(r"\bhttps?://.*uptobox\.com\S+", url)[0]
+        re.findall(r"\bhttps?://.*uptobox\.com\S+", url)[0]
     except IndexError:
         raise DirectDownloadLinkException("`No Uptobox links found`\n")
     if UPTOBOX_TOKEN is None:
@@ -159,10 +156,10 @@ def uptobox(url: str) -> str:
         dl_url = url
     else:
         try:
-            link = re.findall(r"\bhttp?://.*uptobox\.com/dl\S+", url)[0]
+            re.findall(r"\bhttp?://.*uptobox\.com/dl\S+", url)[0]
             logging.info("Uptobox direct link")
             dl_url = url
-        except:
+        except IndexError:
             file_id = re.findall(r"\bhttps?://.*uptobox\.com/(\w+)", url)[0]
             file_link = "https://uptobox.com/api/link?token=%s&file_code=%s" % (
                 UPTOBOX_TOKEN,
@@ -226,7 +223,7 @@ def hxfile(url: str) -> str:
         link = re.findall(r"\bhttps?://.*hxfile\.co\S+", url)[0]
     except IndexError:
         raise DirectDownloadLinkException("`No Hxfile links found`\n")
-    bypasser = lk21.Bypass()
+    bypasser = Bypass()
     dl_url = bypasser.bypass_url(link)
     return dl_url
 
@@ -239,7 +236,7 @@ def anon(url: str) -> str:
         link = re.findall(r"\bhttps?://.*anonfiles\.com\S+", url)[0]
     except IndexError:
         raise DirectDownloadLinkException("`No Anonfiles links found`\n")
-    bypasser = lk21.Bypass()
+    bypasser = Bypass()
     dl_url = bypasser.bypass_url(link)
     return dl_url
 
@@ -252,7 +249,7 @@ def letsupload(url: str) -> str:
         link = re.findall(r"\bhttps?://.*letsupload\.io\S+", url)[0]
     except IndexError:
         raise DirectDownloadLinkException("`No Letsupload links found`\n")
-    bypasser = lk21.Bypass()
+    bypasser = Bypass()
     dl_url = bypasser.bypass_url(link)
     return dl_url
 
@@ -260,7 +257,7 @@ def letsupload(url: str) -> str:
 def fembed(link: str) -> str:
     """Fembed direct link generator
     Based on https://github.com/breakdowns/slam-mirrorbot"""
-    bypasser = lk21.Bypass()
+    bypasser = Bypass()
     dl_url = bypasser.bypass_fembed(link)
     lst_link = []
     count = len(dl_url)
@@ -272,7 +269,7 @@ def fembed(link: str) -> str:
 def sbembed(link: str) -> str:
     """Sbembed direct link generator
     Based on https://github.com/breakdowns/slam-mirrorbot"""
-    bypasser = lk21.Bypass()
+    bypasser = Bypass()
     dl_url = bypasser.bypass_sbembed(link)
     lst_link = []
     count = len(dl_url)
@@ -294,10 +291,7 @@ def onedrive(link: str) -> str:
     resp = requests.head(direct_link1)
     if resp.status_code != 302:
         return "`Error: Unauthorized link, the link may be private`"
-    dl_link = resp.next.url
-    file_name = dl_link.rsplit("/", 1)[1]
-    resp2 = requests.head(dl_link)
-    return dl_link
+    return resp.next.url
 
 
 def pixeldrain(url: str) -> str:

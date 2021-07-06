@@ -1,5 +1,4 @@
 import os
-import pathlib
 import shutil
 import sys
 import tarfile
@@ -44,20 +43,19 @@ def exit_clean_up(signal, frame):
         sys.exit(1)
 
 
-def get_path_size(path):
+def get_path_size(path: str) -> int:
     if os.path.isfile(path):
         return os.path.getsize(path)
     total_size = 0
-    for root, dirs, files in os.walk(path):
+    for root, _, files in os.walk(path):
         for f in files:
             abs_path = os.path.join(root, f)
             total_size += os.path.getsize(abs_path)
     return total_size
 
 
-def tar(org_path):
+def tar(org_path: str) -> str:
     tar_path = org_path + ".tar"
-    path = pathlib.PurePath(org_path)
     LOGGER.info(f"Tar: orig_path: {org_path}, tar_path: {tar_path}")
     tar = tarfile.open(tar_path, "w")
     tar.add(org_path, arcname=os.path.basename(org_path))
@@ -149,3 +147,13 @@ def get_mime_type(file_path):
     mime_type = mime.from_file(file_path)
     mime_type = mime_type if mime_type else "text/plain"
     return mime_type
+
+
+# Solves ValueError: No closing quotation by removing ' or " in file name
+def safe_filename(path_):
+    if path_ is None:
+        return
+    safename = path_.replace("'", "").replace('"', "")
+    if safename != path_:
+        os.rename(path_, safename)
+    return safename

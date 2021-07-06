@@ -3,15 +3,11 @@ from time import sleep
 from telegram.ext import CommandHandler
 
 from bot import DOWNLOAD_DIR, dispatcher, download_dict, download_dict_lock
-from bot.helper.ext_utils.bot_utils import (
-    MirrorStatus,
-    getAllDownload,
-    getDownloadByGid,
-)
+from bot.helper.ext_utils.bot_utils import get_all_download, get_download_by_gid
 from bot.helper.ext_utils.fs_utils import clean_download
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
-from bot.helper.telegram_helper.message_utils import *
+from bot.helper.telegram_helper.message_utils import delete_all_messages, send_message
 
 
 def cancel_mirror(update, context):
@@ -19,9 +15,9 @@ def cancel_mirror(update, context):
     mirror_message = None
     if len(args) > 1:
         gid = args[1]
-        dl = getDownloadByGid(gid)
+        dl = get_download_by_gid(gid)
         if not dl:
-            sendMessage(f"GID: <code>{gid}</code> Not Found.", context.bot, update)
+            send_message(f"GID: <code>{gid}</code> Not Found.", context.bot, update)
             return
         mirror_message = dl.message
     elif update.message.reply_to_message:
@@ -30,7 +26,7 @@ def cancel_mirror(update, context):
             keys = list(download_dict.keys())
             try:
                 dl = download_dict[mirror_message.message_id]
-            except:
+            except Exception:
                 pass
     if len(args) == 1:
         msg = f"Please reply to the <code>/{BotCommands.MirrorCommand}</code> message which was used to start the download or send <code>/{BotCommands.CancelMirror} GID</code> to cancel it!"
@@ -41,22 +37,22 @@ def cancel_mirror(update, context):
                 or BotCommands.UnzipMirrorCommand in mirror_message.text
             ):
                 msg1 = "Mirror Already Have Been Cancelled"
-                sendMessage(msg1, context.bot, update)
+                send_message(msg1, context.bot, update)
                 return
             else:
-                sendMessage(msg, context.bot, update)
+                send_message(msg, context.bot, update)
                 return
         elif not mirror_message:
-            sendMessage(msg, context.bot, update)
+            send_message(msg, context.bot, update)
             return
     if dl.status() == "Uploading...📤":
-        sendMessage("Upload in Progress, You Can't Cancel It.", context.bot, update)
+        send_message("Upload in Progress, You Can't Cancel It.", context.bot, update)
         return
     elif dl.status() == "Archiving...🔐":
-        sendMessage("Archival in Progress, You Can't Cancel It.", context.bot, update)
+        send_message("Archival in Progress, You Can't Cancel It.", context.bot, update)
         return
     elif dl.status() == "Extracting...📂":
-        sendMessage("Extract in Progress, You Can't Cancel It.", context.bot, update)
+        send_message("Extract in Progress, You Can't Cancel It.", context.bot, update)
         return
     else:
         dl.download().cancel_download()
@@ -70,7 +66,7 @@ def cancel_all(update, context):
     count = 0
     gid = 1
     while True:
-        dl = getAllDownload()
+        dl = get_all_download()
         if dl:
             if dl.gid() == gid:
                 continue
@@ -82,7 +78,7 @@ def cancel_all(update, context):
         else:
             break
     delete_all_messages()
-    sendMessage(f"{count} Download(s) has been Cancelled!", context.bot, update)
+    send_message(f"{count} Download(s) has been Cancelled!", context.bot, update)
 
 
 cancel_mirror_handler = CommandHandler(

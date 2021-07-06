@@ -1,11 +1,11 @@
+# flake8: noqa: F405
 # Implement By https://github.com/jusidama18
 # Based on this https://github.com/DevsExpo/FridayUserbot/blob/master/plugins/heroku_helpers.py
-
 from pyrogram import emoji, filters, types
 
 from bot import *
-from bot import OWNER_ID, app
-from bot.helper import check_heroku, get_text
+from bot.helper.ext_utils.heroku_utils import check_heroku
+from bot.helper.telegram_helper.message_utils import get_text
 from bot.helper.telegram_helper.bot_commands import BotCommands
 
 # Add Variable

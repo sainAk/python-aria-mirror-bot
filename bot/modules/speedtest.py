@@ -1,8 +1,8 @@
 from speedtest import Speedtest
-from telegram import ParseMode, Update
-from telegram.ext import CommandHandler, Filters
+from telegram import ParseMode
+from telegram.ext import CommandHandler
 
-from bot import AUTHORIZED_CHATS, dispatcher
+from bot import dispatcher
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
 
@@ -35,7 +35,7 @@ def speedtest(update, context):
         update.effective_message.reply_photo(
             path, string_speed, parse_mode=ParseMode.HTML
         )
-    except:
+    except Exception:
         update.effective_message.reply_text(string_speed, parse_mode=ParseMode.HTML)
 
 
