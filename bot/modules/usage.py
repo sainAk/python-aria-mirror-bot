@@ -2,13 +2,12 @@ import math
 
 import heroku3
 import requests
-from telegram import update
 from telegram.ext import CommandHandler
 
 from bot import HEROKU_API_KEY, HEROKU_APP_NAME, dispatcher
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
-from bot.helper.telegram_helper.message_utils import sendMessage
+from bot.helper.telegram_helper.message_utils import send_message
 
 
 def dyno_usage(update, context):
@@ -17,7 +16,7 @@ def dyno_usage(update, context):
         Heroku = heroku3.from_key(HEROKU_API_KEY)
         app = Heroku.app(HEROKU_APP_NAME)
     else:
-        sendMessage(
+        send_message(
             "Please insert your HEROKU_APP_NAME and HEROKU_API_KEY in Vars",
             context.bot,
             update,
@@ -62,7 +61,7 @@ def dyno_usage(update, context):
             AppHours = math.floor(AppQuotaUsed / 60)
             AppMinutes = math.floor(AppQuotaUsed % 60)
 
-            sendMessage(
+            send_message(
                 f"<b>Dyno Usage for</b> <code>{app.name}</code>:\n"
                 f"• <code>{AppHours}</code> <b>Hours and</b> <code>{AppMinutes}</code> <b>Minutes - {AppPercent}%</b>\n\n"
                 "<b>Dyno Remaining this month:</b>\n"

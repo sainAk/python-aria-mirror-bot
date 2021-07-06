@@ -6,8 +6,10 @@ import time
 from youtube_dl import DownloadError, YoutubeDL
 
 from bot import download_dict, download_dict_lock
+from bot.helper.mirror_utils.status_utils.youtube_dl_download_status import (
+    YoutubeDLDownloadStatus,
+)
 
-from ..status_utils.youtube_dl_download_status import YoutubeDLDownloadStatus
 from .download_helper import DownloadHelper
 
 LOGGER = logging.getLogger(__name__)
@@ -113,7 +115,8 @@ class YoutubeDLHelper(DownloadHelper):
         with YoutubeDL(self.opts) as ydl:
             try:
                 result = ydl.extract_info(link, download=False)
-                name = ydl.prepare_filename(result) if name else name
+                if name == "":
+                    name = ydl.prepare_filename(result)
                 # noobway hack for changing extension after converting to mp3
                 if qual == "audio":
                     name = name.replace(".mp4", ".mp3").replace(".webm", ".mp3")

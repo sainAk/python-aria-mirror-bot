@@ -1,3 +1,4 @@
+import logging
 import threading
 from time import sleep
 
@@ -8,14 +9,22 @@ from bot import (
     TAR_UNZIP_LIMIT,
     TORRENT_DIRECT_LIMIT,
     aria2,
+    download_dict,
     download_dict_lock,
 )
-from bot.helper.ext_utils.bot_utils import *
+from bot.helper.ext_utils.bot_utils import (
+    get_download_by_gid,
+    get_readable_file_size,
+    is_magnet,
+    new_thread,
+)
 from bot.helper.mirror_utils.status_utils.aria_download_status import AriaDownloadStatus
 from bot.helper.mirror_utils.upload_utils.gdriveTools import GoogleDriveHelper
-from bot.helper.telegram_helper.message_utils import *
+from bot.helper.telegram_helper.message_utils import send_markup, update_all_messages
 
 from .download_helper import DownloadHelper
+
+LOGGER = logging.getLogger(__name__)
 
 
 class AriaDownloadHelper(DownloadHelper):
@@ -30,11 +39,11 @@ class AriaDownloadHelper(DownloadHelper):
             or TAR_UNZIP_LIMIT is not None
         ):
             sleep(0.5)
-            dl = getDownloadByGid(gid)
+            dl = get_download_by_gid(gid)
             download = api.get_download(gid)
 
             if STOP_DUPLICATE_MIRROR:
-                LOGGER.info(f"Checking File/Folder if already in Drive...")
+                LOGGER.info("Checking File/Folder if already in Drive...")
                 self.name = download.name
                 sname = download.name
                 if self.listener.isTar:
@@ -46,10 +55,10 @@ class AriaDownloadHelper(DownloadHelper):
                     smsg, button = gdrive.drive_list(sname)
                 if smsg:
                     dl.getListener().onDownloadError(
-                        f"File/Folder is already available in Drive.\n\n"
+                        "File/Folder is already available in Drive.\n\n"
                     )
                     aria2.remove([download])
-                    sendMarkup(
+                    send_markup(
                         "Here are the search results:",
                         dl.getListener().bot,
                         dl.getListener().update,
@@ -62,11 +71,11 @@ class AriaDownloadHelper(DownloadHelper):
                 if TAR_UNZIP_LIMIT is not None and (
                     self.listener.isTar or self.listener.extract
                 ):
-                    LOGGER.info(f"Checking File/Folder Size...")
+                    LOGGER.info("Checking File/Folder Size...")
                     limit = TAR_UNZIP_LIMIT
                     mssg = f"Tar/Unzip limit is {TAR_UNZIP_LIMIT}"
                 elif TORRENT_DIRECT_LIMIT is not None and limit is None:
-                    LOGGER.info(f"Checking File/Folder Size...")
+                    LOGGER.info("Checking File/Folder Size...")
                     limit = TORRENT_DIRECT_LIMIT
                     mssg = f"Torrent/Direct limit is {TORRENT_DIRECT_LIMIT}"
                 if limit is not None:
@@ -92,7 +101,7 @@ class AriaDownloadHelper(DownloadHelper):
 
     def __onDownloadComplete(self, api: API, gid):
         LOGGER.info(f"onDownloadComplete: {gid}")
-        dl = getDownloadByGid(gid)
+        dl = get_download_by_gid(gid)
         download = api.get_download(gid)
         if download.followed_by_ids:
             new_gid = download.followed_by_ids[0]
@@ -111,7 +120,7 @@ class AriaDownloadHelper(DownloadHelper):
     @new_thread
     def __onDownloadStopped(self, api, gid):
         sleep(1)
-        dl = getDownloadByGid(gid)
+        dl = get_download_by_gid(gid)
         if dl:
             dl.getListener().onDownloadError("Dead torrent!")
 
@@ -120,7 +129,7 @@ class AriaDownloadHelper(DownloadHelper):
         sleep(
             0.5
         )  # sleep for split second to ensure proper dl gid update from onDownloadComplete
-        dl = getDownloadByGid(gid)
+        dl = get_download_by_gid(gid)
         download = api.get_download(gid)
         error = download.error_message
         LOGGER.info(f"Download Error: {error}")
