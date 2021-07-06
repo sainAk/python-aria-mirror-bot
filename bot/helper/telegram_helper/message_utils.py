@@ -183,7 +183,7 @@ def send_status_message(msg, bot):
 
 # Implement by https://github.com/jusidama18
 # Setting Message
-def get_text(message: Message):# -> None | str: #TODO python 3.10
+def get_text(message: Message):  # -> None | str: #TODO python 3.10
     """Extract Text From Commands"""
     text_to_return = message.text
     if message.text is None:

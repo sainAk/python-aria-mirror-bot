@@ -5,12 +5,12 @@ import heroku3
 from bot import HEROKU_API_KEY, HEROKU_APP_NAME
 
 
-
 # Preparing For Setting Config
 # Implement by https://github.com/jusidama18 and Based on this https://github.com/DevsExpo/FridayUserbot/blob/master/plugins/heroku_helpers.py
 def check_heroku(func):
     if HEROKU_API_KEY:
         heroku_client = heroku3.from_key(HEROKU_API_KEY)
+
     @wraps(func)
     async def heroku_cli(client, message):
         heroku_app = None
