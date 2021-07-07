@@ -33,11 +33,9 @@ def update(update, context):
         edit_message("Applying changes...", reply)
         run("cp -r /usr/src/app/repo/. /usr/src/app", shell=True, check=True)
         run("rm -rf /usr/src/app/repo/.git", shell=True, check=True)
-        run(
-            "pip install -r /usr/src/app/requirements.txt", shell=True, check=True
-        )
+        run("pip install -r /usr/src/app/requirements.txt", shell=True, check=True)
         edit_message("Updated Sucessfully! Give Me Some Time To Restart!", reply)
-        
+
         clean_all()
         os.execl(executable, executable, "-m", "bot")
     except CalledProcessError as e:
